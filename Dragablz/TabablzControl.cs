@@ -1025,7 +1025,7 @@ namespace Dragablz
             }
             else
             {
-                myWindow.Left += e.DragDeltaEventArgs.HorizontalChange;
+                myWindow.Left += FlowDirection == FlowDirection.RightToLeft ? e.DragDeltaEventArgs.HorizontalChange * -1 : e.DragDeltaEventArgs.HorizontalChange;
                 myWindow.Top += e.DragDeltaEventArgs.VerticalChange;
             }
 
@@ -1293,7 +1293,8 @@ namespace Dragablz
             }            
             
             dragStartWindowOffset.Offset(dragablzItem.MouseAtDragStart.X, dragablzItem.MouseAtDragStart.Y);
-            var borderVector = currentWindow.PointToScreen(new Point()).ToWpf() - new Point(currentWindow.GetActualLeft(), currentWindow.GetActualTop());
+            var rightToLeftOffset = FlowDirection == FlowDirection.RightToLeft ? ActualWidth - Mouse.GetPosition(this).X - dragablzItem.X - dragablzItem.ActualHeight : 0;
+            var borderVector = currentWindow.PointToScreen(new Point()).ToWpf() - new Point(currentWindow.GetActualLeft() - rightToLeftOffset, currentWindow.GetActualTop());
             dragStartWindowOffset.Offset(borderVector.X, borderVector.Y);
             return dragStartWindowOffset;
         }
