@@ -1267,12 +1267,14 @@ namespace Dragablz
         {
             var layout = this.VisualTreeAncestory().OfType<Layout>().FirstOrDefault();
             Point dragStartWindowOffset;
+            double rightToLeftOffset;
+            Vector borderVector;
+
             if (layout != null)
             {
                 newTabHost.Container.Width = ActualWidth + Math.Max(0, currentWindow.RestoreBounds.Width - layout.ActualWidth);
                 newTabHost.Container.Height = ActualHeight + Math.Max(0, currentWindow.RestoreBounds.Height - layout.ActualHeight);
                 dragStartWindowOffset = dragablzItem.TranslatePoint(new Point(), this);
-                //dragStartWindowOffset.Offset(currentWindow.RestoreBounds.Width - layout.ActualWidth, currentWindow.RestoreBounds.Height - layout.ActualHeight);
             }
             else
             {
@@ -1281,20 +1283,24 @@ namespace Dragablz
                     newTabHost.Container.Width = currentWindow.RestoreBounds.Width;
                     newTabHost.Container.Height = currentWindow.RestoreBounds.Height;
                     dragStartWindowOffset = isTransposing ? new Point(dragablzItem.MouseAtDragStart.X, dragablzItem.MouseAtDragStart.Y) : dragablzItem.TranslatePoint(new Point(), currentWindow);
+
+                    dragStartWindowOffset.Offset(dragablzItem.MouseAtDragStart.X, dragablzItem.MouseAtDragStart.Y);
+                    rightToLeftOffset = FlowDirection == FlowDirection.RightToLeft ? Mouse.GetPosition(this).X - dragablzItem.X + (dragablzItem.ActualWidth / 2) : 0;
+                    borderVector = currentWindow.PointToScreen(new Point()).ToWpf() - new Point(currentWindow.GetActualLeft() + rightToLeftOffset, currentWindow.GetActualTop());
+                    dragStartWindowOffset.Offset(borderVector.X, borderVector.Y);
+                    return dragStartWindowOffset;
                 }
                 else
                 {
                     newTabHost.Container.Width = ActualWidth;
                     newTabHost.Container.Height = ActualHeight;
                     dragStartWindowOffset = isTransposing ? new Point() : dragablzItem.TranslatePoint(new Point(), this);
-                    dragStartWindowOffset.Offset(dragablzItem.MouseAtDragStart.X, dragablzItem.MouseAtDragStart.Y);
-                    return dragStartWindowOffset;
-                }                
-            }            
-            
+                }
+            }
+
             dragStartWindowOffset.Offset(dragablzItem.MouseAtDragStart.X, dragablzItem.MouseAtDragStart.Y);
-            var rightToLeftOffset = FlowDirection == FlowDirection.RightToLeft ? ActualWidth - Mouse.GetPosition(this).X - dragablzItem.X - dragablzItem.ActualHeight : 0;
-            var borderVector = currentWindow.PointToScreen(new Point()).ToWpf() - new Point(currentWindow.GetActualLeft() - rightToLeftOffset, currentWindow.GetActualTop());
+            rightToLeftOffset = FlowDirection == FlowDirection.RightToLeft ? ActualWidth - Mouse.GetPosition(this).X - dragablzItem.X - (dragablzItem.ActualWidth / 2) : 0;
+            borderVector = currentWindow.PointToScreen(new Point()).ToWpf() - new Point(currentWindow.GetActualLeft() - rightToLeftOffset, currentWindow.GetActualTop());
             dragStartWindowOffset.Offset(borderVector.X, borderVector.Y);
             return dragStartWindowOffset;
         }
